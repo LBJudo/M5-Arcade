@@ -20,8 +20,15 @@ jobs:
         run: |
           mkdir -p sketch/M5_Arcade
           cp M5_Arcade.ino sketch/M5_Arcade/
+      - name: Trouver la carte StickS3
+        run: |
+          arduino-cli board listall m5stack | grep -i stick
+          FQBN=$(arduino-cli board listall m5stack | grep -i "sticks3" | head -1 | awk '{print $NF}')
+          echo "FQBN trouvé : $FQBN"
+          test -n "$FQBN"
+          echo "FQBN=$FQBN" >> $GITHUB_ENV
       - name: Compiler
-        run: arduino-cli compile --fqbn m5stack:esp32:m5stack_core --output-dir out sketch/M5_Arcade
+        run: arduino-cli compile --fqbn "$FQBN" --output-dir out sketch/M5_Arcade
       - uses: actions/upload-artifact@v4
         with:
           name: firmware
