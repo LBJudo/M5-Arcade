@@ -1,0 +1,25 @@
+name: Build
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: arduino/setup-arduino-cli@v2
+      - name: Installer la carte et les libs
+        run: |
+          arduino-cli config init
+          arduino-cli config add board_manager.additional_urls https://static-cdn.m5stack.com/resource/arduino/package_m5stack_index.json
+          arduino-cli core update-index
+          arduino-cli core install m5stack:esp32
+          arduino-cli lib install M5Stack
+      - name: Préparer le croquis
+        run: |
+          mkdir -p sketch/M5_Arcade
+          cp M5_Arcade.ino sketch/M5_Arcade/
+      - name: Compiler
+        run: arduino-cli compile --fqbn m5stack:esp32:m5stack_core --output-dir out sketch/M5_Arcade
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firmware
+          path: out/*.bin
